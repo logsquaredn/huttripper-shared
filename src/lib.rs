@@ -5,7 +5,15 @@ use aws_sdk_s3::{Client, operation::get_object::GetObjectOutput, primitives::Byt
 #[derive(Clone)]
 pub struct S3Helper {
     pub s3_client: Client,
-    pub ht_bucket: String,
+    pub bucket: String,
+}
+
+pub fn create_s3_helper(aws_config: &aws_config::SdkConfig, bucket: String) -> S3Helper {
+    let s3_client: aws_sdk_s3::Client = aws_sdk_s3::Client::new(aws_config);
+    S3Helper {
+        s3_client,
+        bucket
+    }
 }
 
 impl S3Helper {
@@ -13,7 +21,7 @@ impl S3Helper {
     pub async fn get_object(&self, key: &str) -> Result<Option<GetObjectOutput>, S3Error> {
         let maybe_object: Option<GetObjectOutput> = match self.s3_client
             .get_object()
-            .bucket(&self.ht_bucket)
+            .bucket(&self.bucket)
             .key(key)
             .send()
             .await {
