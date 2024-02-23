@@ -8,11 +8,11 @@ pub struct S3Helper {
     pub bucket: String,
 }
 
-pub fn create_s3_helper(aws_config: &aws_config::SdkConfig, bucket: String) -> S3Helper {
+pub fn create_s3_helper(aws_config: &aws_config::SdkConfig, bucket: &str) -> S3Helper {
     let s3_client: aws_sdk_s3::Client = aws_sdk_s3::Client::new(aws_config);
     S3Helper {
         s3_client,
-        bucket
+        bucket: bucket.to_string()
     }
 }
 
