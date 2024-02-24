@@ -78,6 +78,20 @@ impl S3Helper {
 
         Ok(mem)
     }
+
+    pub async fn exists(
+        &self,
+        key: &str
+    ) -> bool {
+        return match self.s3_client
+            .head_object()
+            .bucket(&self.bucket)
+            .key(key)
+            .send().await {
+                Err(_) => false,
+                Ok(_) => true
+        };
+    }
 }
 
 #[derive(Debug)]
