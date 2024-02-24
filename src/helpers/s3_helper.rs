@@ -38,7 +38,7 @@ impl S3Helper {
                 }
             }?;
 
-        return Ok(maybe_object);
+        Ok(maybe_object)
     }
 
     pub async fn read_object_bytes(&self, mut object: GetObjectOutput) -> Result<Cursor<Vec<u8>>, ByteStreamError> {
@@ -47,7 +47,7 @@ impl S3Helper {
             mem.write_all(&bytes)?;
         }
 
-        return Ok(mem);
+        Ok(mem)
     }
 }
 
