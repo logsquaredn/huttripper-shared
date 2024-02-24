@@ -1,6 +1,6 @@
 use std::{fmt, io::{Cursor, Write}};
 
-use aws_sdk_s3::{Client, operation::get_object::GetObjectOutput, primitives::ByteStreamError};
+use aws_sdk_s3::{operation::{get_object::GetObjectOutput, list_objects_v2::ListObjectsV2Output}, primitives::ByteStreamError, types::Object, Client};
 
 #[derive(Clone)]
 pub struct S3Helper {
@@ -17,6 +17,35 @@ pub fn create_s3_helper(aws_config: &aws_config::SdkConfig, bucket: &str) -> S3H
 }
 
 impl S3Helper {
+
+    pub async fn list_objects(
+        &self,
+        prefix: &str
+    ) -> Vec<String> {
+        let mut results: Vec<String> = Vec::new();
+        let loo: ListObjectsV2Output = match self.s3_client
+            .list_objects_v2()
+            .bucket(&self.bucket)
+            .prefix(prefix)
+            .send()
+            .await {
+                Err(_) => {
+                    return results;
+                },
+                Ok(res) => res 
+            };
+        let objects: &[Object] = loo
+            .contents();
+
+        for object in objects {
+            let key = object.key().map_or("", |key| key);
+            if !key.is_empty() && !key.ends_with("/") {
+                results.push(key.to_string());
+            }
+        }
+
+        return results;
+    }   
 
     pub async fn get_object(&self, key: &str) -> Result<Option<GetObjectOutput>, S3Error> {
         let maybe_object: Option<GetObjectOutput> = match self.s3_client
