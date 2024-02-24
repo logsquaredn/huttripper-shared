@@ -1,1 +1,2 @@
-pub mod s3_helper;
+pub mod helpers;
+pub mod model;
