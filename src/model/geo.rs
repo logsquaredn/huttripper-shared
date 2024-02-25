@@ -14,7 +14,7 @@ pub struct HutsJSON {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Feature {
-    pub id: String,
+    pub id: Option<String>,
     #[serde(rename = "type")]
     pub type_field: String,
     pub geometry: serde_json::Value,
