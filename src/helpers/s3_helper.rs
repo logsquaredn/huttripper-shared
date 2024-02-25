@@ -1,6 +1,6 @@
 use std::{fmt, io::{Cursor, Write}};
 
-use aws_sdk_s3::{operation::{get_object::GetObjectOutput, list_objects_v2::ListObjectsV2Output}, primitives::ByteStreamError, types::Object, Client};
+use aws_sdk_s3::{error::SdkError, operation::{get_object::GetObjectOutput, list_objects_v2::ListObjectsV2Output, put_object::PutObjectError}, primitives::{ByteStream, ByteStreamError}, types::Object, Client};
 
 #[derive(Clone)]
 pub struct S3Helper {
@@ -78,6 +78,22 @@ impl S3Helper {
 
         Ok(mem)
     }
+
+    pub async fn put_object(
+        &self, 
+        key: &str, 
+        body: Vec<u8>
+    ) -> Result<(), SdkError<PutObjectError>> {
+        self.s3_client
+            .put_object()
+            .bucket(&self.bucket)
+            .key(key)
+            .body(ByteStream::from(body))
+            .send()
+            .await?;
+
+        return Ok(());
+    }    
 
     pub async fn exists(
         &self,
