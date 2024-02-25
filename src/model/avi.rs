@@ -1,7 +1,8 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use sqlx::{postgres::PgRow, Row};
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AviReport {
     pub zone_name: String,
     pub avi_center: String,
@@ -36,6 +37,21 @@ impl AviReport {
             zone_link: zps.link.clone(), 
             start_time: start_time, 
             end_time: end_time
+        })
+    }
+
+    pub fn map_from(row: PgRow) -> Result<Self, sqlx::Error> {
+        Ok(Self {
+            zone_name: row.try_get("zonename")?,
+            avi_center: row.try_get("avicenter")?,
+            avi_center_link: row.try_get("avicenterlink")?,
+            off_season: row.try_get("offseason")?,
+            travel_advice: row.try_get("traveladvice")?,
+            danger: row.try_get("danger")?,
+            danger_level: row.try_get("dangerlevel")?,
+            zone_link: row.try_get("zonelink")?,
+            start_time: row.try_get("starttime")?,
+            end_time: row.try_get("endtime")?,
         })
     }
 }
