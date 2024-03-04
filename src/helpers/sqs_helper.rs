@@ -1,4 +1,4 @@
-use aws_sdk_sqs::{error::SdkError, operation::{get_queue_url::GetQueueUrlError, receive_message::ReceiveMessageError, send_message::SendMessageError}, types::Message, Client};
+use aws_sdk_sqs::{error::SdkError, operation::{delete_message::DeleteMessageError, get_queue_url::GetQueueUrlError, receive_message::ReceiveMessageError, send_message::SendMessageError}, types::Message, Client};
 
 pub struct SQSHelper {
     pub sqs_client: Client,
@@ -42,5 +42,16 @@ impl SQSHelper {
             .await?;
 
         Ok(rec_msg_output.messages.unwrap_or(Vec::new()))
+    }
+
+    pub async fn delete_message(&self, receipt_handle: &str) -> Result<(), SdkError<DeleteMessageError>> {
+        self.sqs_client
+            .delete_message()
+            .queue_url(&self.queue_url)
+            .receipt_handle(receipt_handle)
+            .send()
+            .await?;
+
+        Ok(())
     }
 }
