@@ -1,5 +1,6 @@
 use aws_sdk_sqs::{error::SdkError, operation::{delete_message::DeleteMessageError, get_queue_url::GetQueueUrlError, receive_message::ReceiveMessageError, send_message::SendMessageError}, types::Message, Client};
 
+#[derive(Clone)]
 pub struct SQSHelper {
     pub sqs_client: Client,
     pub queue_url: String
