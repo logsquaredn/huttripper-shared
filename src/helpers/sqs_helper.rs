@@ -1,4 +1,4 @@
-use aws_sdk_sqs::{error::SdkError, operation::{receive_message::ReceiveMessageError, send_message::SendMessageError}, types::{builders::MessageBuilder, Message}, Client};
+use aws_sdk_sqs::{error::SdkError, operation::{receive_message::ReceiveMessageError, send_message::SendMessageError}, types::Message, Client};
 
 pub struct SQSHelper {
     pub sqs_client: Client,
