@@ -37,8 +37,8 @@ impl AviReport {
             danger: zps.danger.clone(), 
             danger_level: zps.danger_level, 
             zone_link: zps.link.clone(), 
-            start_time: start_time, 
-            end_time: end_time
+            start_time, 
+            end_time
         })
     }
 
