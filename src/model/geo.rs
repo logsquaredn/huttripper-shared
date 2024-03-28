@@ -30,6 +30,7 @@ pub struct Properties {
     pub folder_id: Option<String>,
     #[serde(rename = "marker-color")]
     pub marker_color: Option<String>,
+    pub marker_symbol: Option<String>,
     pub stroke: Option<String>,
     pub huttripper_type: Option<String>
 }
