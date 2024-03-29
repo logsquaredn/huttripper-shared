@@ -33,5 +33,6 @@ pub struct Properties {
     #[serde(rename = "marker-symbol")]
     pub marker_symbol: Option<String>,
     pub stroke: Option<String>,
+    pub fill: Option<String>,
     pub huttripper_type: Option<String>
 }
