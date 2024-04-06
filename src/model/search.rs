@@ -6,6 +6,6 @@ pub struct SearchRepresentation {
     pub system: String,
     pub state: String,
     pub amenities: String,
-    pub sanitizedstate: String,
+    pub sanitizedname: String,
     pub sanitizedsystem: String
 }
