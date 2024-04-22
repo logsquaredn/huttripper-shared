@@ -1,6 +1,7 @@
 use core::fmt;
+use std::borrow::Borrow;
 
-use elasticsearch::{auth::Credentials, cert::CertificateValidation, http::{transport::{SingleNodeConnectionPool, TransportBuilder}, Url}, indices::{IndicesCreateParts, IndicesDeleteParts, IndicesExistsParts}, BulkOperation, BulkParts, Elasticsearch};
+use elasticsearch::{auth::Credentials, cert::CertificateValidation, http::{transport::{SingleNodeConnectionPool, TransportBuilder}, Url}, indices::{IndicesCreateParts, IndicesDeleteParts, IndicesExistsParts}, BulkOperation, BulkParts, Elasticsearch, SearchParts};
 use serde::Serialize;
 use serde_json::Value;
 
@@ -48,9 +49,9 @@ impl ESHelper {
                     .text()
                     .await
                     .unwrap_or("failed to get text from elasticsearch response body".to_string());
-                Err(ElasticsearchDeleteIndexError {
+                return Err(ElasticsearchDeleteIndexError {
                     message: format!("non success status code received when trying to delete index: {}: {}", code, reason)
-                })?
+                })
             }
         }
 
@@ -71,9 +72,9 @@ impl ESHelper {
                 .text()
                 .await
                 .unwrap_or("failed to get text from elasticsearch response body".to_string());
-            Err(ElasticsearchCreateIndexError {
+            return Err(ElasticsearchCreateIndexError {
                 message: format!("non success status code received when trying to create index: {}: {}", code.as_str(), reason)
-            })?
+            })
         }
 
         Ok(())
@@ -97,12 +98,43 @@ impl ESHelper {
                 .text()
                 .await
                 .unwrap_or("failed to get text from elasticsearch response body".to_string());
-            Err(ElasticsearchBulkIndexError {
+            return Err(ElasticsearchBulkIndexError {
                 message: format!("non success status code received when trying to bulk index: {}: {}", code, reason)
-            })?  
+            })
         }
 
         Ok(())
+    }
+
+    pub async fn search(&self, index: &str, body: Value) -> Result<Vec<Value>, ElasticsearchSearchError> {
+        let search_res = self.client
+            .search(SearchParts::Index(&[index]))
+            .body(body)
+            .send()
+            .await
+            .map_err(|err| ElasticsearchSearchError{message: err.to_string()})?;
+        let code = search_res.status_code();
+        if !code.is_success() {
+            let reason = search_res
+                .text()
+                .await
+                .unwrap_or("failed to get text from elasticserach response body".to_string());
+            return Err(ElasticsearchSearchError {
+                message: format!("non success status code received when trying to search: {}: {}", code, reason)
+            })
+        }
+
+        let json: Value = search_res
+            .json()
+            .await
+            .map_err(|err| ElasticsearchSearchError{message: format!("failed to get json from elasticsearch response body: {}", err.to_string())})?;
+
+        let hits: Vec<Value> = json["hits"]["hits"]
+            .as_array()
+            .unwrap_or(&vec![])
+            .to_owned();
+
+        Ok(hits)
     }
 }
 
@@ -169,6 +201,23 @@ impl fmt::Display for ElasticsearchBulkIndexError {
 }
 
 impl std::error::Error for ElasticsearchBulkIndexError {
+    fn description(&self) -> &str {
+        &self.message
+    }
+}
+
+#[derive(Debug)]
+pub struct ElasticsearchSearchError {
+    pub message: String
+}
+
+impl fmt::Display for ElasticsearchSearchError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl std::error::Error for ElasticsearchSearchError {
     fn description(&self) -> &str {
         &self.message
     }
