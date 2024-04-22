@@ -106,7 +106,7 @@ impl ESHelper {
                     .collect();
 
                 Err(ElasticsearchBulkIndexError {
-                    message: format!("failed to bulk index: {}: {:?}", code, failed)
+                    message: format!("fnon success status code received when trying to bulk index: {}: {:?}", code, failed)
                 })?
             } else {
                 Err(ElasticsearchBulkIndexError {
