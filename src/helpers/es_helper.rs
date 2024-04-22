@@ -9,7 +9,7 @@ pub struct ESHelper {
     pub client: Elasticsearch
 }
 
-pub async fn create_es_helper(elasticsearch_url: &str, elasticsearch_user: &str, elasticsearch_password: &str) -> Result<ESHelper, ElasticsearchCreateClientError> {
+pub fn create_es_helper(elasticsearch_url: &str, elasticsearch_user: &str, elasticsearch_password: &str) -> Result<ESHelper, ElasticsearchCreateClientError> {
     let conn_pool = SingleNodeConnectionPool::new(Url::parse(elasticsearch_url)
         .map_err(|err| ElasticsearchCreateClientError{message: err.to_string()})?
     );
