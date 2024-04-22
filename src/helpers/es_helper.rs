@@ -93,26 +93,13 @@ impl ESHelper {
             .map_err(|err| ElasticsearchBulkIndexError{message: err.to_string()})?;
         let code = bulk_res.status_code();
         if !code.is_success() {
-            let json: Value = bulk_res
-                .json()
+            let reason = bulk_res
+                .text()
                 .await
-                .map_err(|err| ElasticsearchBulkIndexError{message: err.to_string()})?;
-            if json["errors"].as_bool().unwrap_or(false) {
-                let failed: Vec<&Value> = json["items"]
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .filter(|v| !v["error"].is_null())
-                    .collect();
-
-                Err(ElasticsearchBulkIndexError {
-                    message: format!("fnon success status code received when trying to bulk index: {}: {:?}", code, failed)
-                })?
-            } else {
-                Err(ElasticsearchBulkIndexError {
-                    message: format!("non success status code received when trying to bulk index: {}: {}", code, json)
-                })?
-            }        
+                .unwrap_or("failed to get text from elasticsearch response body".to_string());
+            Err(ElasticsearchBulkIndexError {
+                message: format!("non success status code received when trying to bulk index: {}: {}", code, reason)
+            })?  
         }
 
         Ok(())
