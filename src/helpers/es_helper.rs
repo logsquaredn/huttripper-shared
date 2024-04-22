@@ -47,7 +47,7 @@ impl ESHelper {
                 let reason = delete_res
                     .text()
                     .await
-                    .unwrap_or("faield to get text from elasticsearch response body".to_string());
+                    .unwrap_or("failed to get text from elasticsearch response body".to_string());
                 Err(ElasticsearchDeleteIndexError {
                     message: format!("non success status code received when trying to delete index: {}: {}", code, reason)
                 })?
@@ -70,7 +70,7 @@ impl ESHelper {
             let reason = create_res
                 .text()
                 .await
-                .unwrap_or("faield to get text from elasticsearch response body".to_string());
+                .unwrap_or("failed to get text from elasticsearch response body".to_string());
             Err(ElasticsearchCreateIndexError {
                 message: format!("non success status code received when trying to create index: {}: {}", code.as_str(), reason)
             })?
