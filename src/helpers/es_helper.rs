@@ -9,7 +9,7 @@ pub struct ESHelper {
     pub client: Elasticsearch
 }
 
-pub fn create_es_helper(elasticsearch_url: &str, elasticsearch_user: &str, elasticsearch_password: &str) -> Result<ESHelper, ElasticsearchCreateClientError> {
+pub async fn create_es_helper(elasticsearch_url: &str, elasticsearch_user: &str, elasticsearch_password: &str) -> Result<ESHelper, ElasticsearchCreateClientError> {
     let conn_pool = SingleNodeConnectionPool::new(Url::parse(elasticsearch_url)
         .map_err(|err| ElasticsearchCreateClientError{message: err.to_string()})?
     );
@@ -41,10 +41,15 @@ impl ESHelper {
                 .delete(IndicesDeleteParts::Index(&[index]))
                 .send()
                 .await
-                .map_err(|err| ElasticsearchDeleteIndexError{message: err.to_string()})?;  
-            if !delete_res.status_code().is_success() {
+                .map_err(|err| ElasticsearchDeleteIndexError{message: err.to_string()})?; 
+            let code =  delete_res.status_code();
+            if !code.is_success() {
+                let reason = delete_res
+                    .text()
+                    .await
+                    .unwrap_or("faield to get text from elasticsearch response body".to_string());
                 Err(ElasticsearchDeleteIndexError {
-                    message: format!("non success status code received when trying to delete index: {}", delete_res.status_code().as_str())
+                    message: format!("non success status code received when trying to delete index: {}: {}", code, reason)
                 })?
             }
         }
@@ -60,9 +65,14 @@ impl ESHelper {
             .send()
             .await
             .map_err(|err| ElasticsearchCreateIndexError{message: err.to_string()})?;
-        if !create_res.status_code().is_success() {
+        let code = create_res.status_code();
+        if !code.is_success() {
+            let reason = create_res
+                .text()
+                .await
+                .unwrap_or("faield to get text from elasticsearch response body".to_string());
             Err(ElasticsearchCreateIndexError {
-                message: format!("non success status code received when trying to create index: {}", create_res.status_code().as_str())
+                message: format!("non success status code received when trying to create index: {}: {}", code.as_str(), reason)
             })?
         }
 
@@ -81,27 +91,28 @@ impl ESHelper {
             .send()
             .await
             .map_err(|err| ElasticsearchBulkIndexError{message: err.to_string()})?;
-        if !bulk_res.status_code().is_success() {
-            Err(ElasticsearchBulkIndexError {
-                message: format!("non success status code received when trying to bulk index: {}", bulk_res.status_code().as_str())
-            })?
-        }
+        let code = bulk_res.status_code();
+        if !code.is_success() {
+            let json: Value = bulk_res
+                .json()
+                .await
+                .map_err(|err| ElasticsearchBulkIndexError{message: err.to_string()})?;
+            if json["errors"].as_bool().unwrap_or(false) {
+                let failed: Vec<&Value> = json["items"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter(|v| !v["error"].is_null())
+                    .collect();
 
-        let json: Value = bulk_res
-            .json()
-            .await
-            .map_err(|err| ElasticsearchBulkIndexError{message: err.to_string()})?;
-        if json["errors"].as_bool().unwrap() {
-            let failed: Vec<&Value> = json["items"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .filter(|v| !v["error"].is_null())
-                .collect();
-
-            Err(ElasticsearchBulkIndexError {
-                message: format!("failed to bulk index: {}", failed.len())
-            })?
+                Err(ElasticsearchBulkIndexError {
+                    message: format!("failed to bulk index: {}: {:?}", code, failed)
+                })?
+            } else {
+                Err(ElasticsearchBulkIndexError {
+                    message: format!("non success status code received when trying to bulk index: {}: {}", code, json)
+                })?
+            }        
         }
 
         Ok(())
