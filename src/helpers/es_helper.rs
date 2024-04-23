@@ -1,8 +1,7 @@
 use core::fmt;
-use std::borrow::Borrow;
 
 use elasticsearch::{auth::Credentials, cert::CertificateValidation, http::{transport::{SingleNodeConnectionPool, TransportBuilder}, Url}, indices::{IndicesCreateParts, IndicesDeleteParts, IndicesExistsParts}, BulkOperation, BulkParts, Elasticsearch, SearchParts};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Clone)]
@@ -106,7 +105,7 @@ impl ESHelper {
         Ok(())
     }
 
-    pub async fn search(&self, index: &str, body: Value) -> Result<Vec<Value>, ElasticsearchSearchError> {
+    pub async fn search(&self, index: &str, body: Value) -> Result<Vec<ElasticsearchHit>, ElasticsearchSearchError> {
         let search_res = self.client
             .search(SearchParts::Index(&[index]))
             .body(body)
@@ -129,13 +128,27 @@ impl ESHelper {
             .await
             .map_err(|err| ElasticsearchSearchError{message: format!("failed to get json from elasticsearch response body: {}", err.to_string())})?;
 
-        let hits: Vec<Value> = json["hits"]["hits"]
+        let hits: Result<Vec<ElasticsearchHit>, ElasticsearchSearchError> = json["hits"]["hits"]
             .as_array()
             .unwrap_or(&vec![])
-            .to_owned();
+            .to_owned()
+            .iter()
+            .map(|hit| 
+                serde_json::from_value(hit.to_owned())
+                    .map_err(|err| ElasticsearchSearchError{message: format!("failed to get elasticsearch hits: {}", err)})
+            )
+            .collect();
 
-        Ok(hits)
+        Ok(hits?)
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ElasticsearchHit {
+    pub _id: String,
+    pub _index: String,
+    pub _score: f32,
+    pub _source: Value
 }
 
 #[derive(Debug)]
