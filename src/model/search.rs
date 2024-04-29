@@ -7,7 +7,6 @@ pub struct HutSearchRepresentation {
     pub name: String,
     pub sanitized_name: String,
     pub system: String,
-    pub sanitized_system: String,
     pub state: String,
     pub amenities: String
 }
@@ -21,7 +20,6 @@ impl HutSearchRepresentation {
             name: row.try_get("name")?,
             sanitized_name: row.try_get("sanitizedname")?,
             system: row.try_get("system")?,
-            sanitized_system: row.try_get("sanitizedsystem")?,
             state: row.try_get("state")?,
             amenities: amenities.join(" ")
         })
