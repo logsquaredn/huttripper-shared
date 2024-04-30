@@ -141,6 +141,15 @@ impl ESHelper {
 
         Ok(hits?)
     }
+
+    pub fn parse_hits(hits: Vec<ElasticsearchHit>, key: &str) -> Vec<String> {
+        return hits
+            .iter()
+            .map(|hit| hit._source[key].as_str())
+            .filter(|val| val.is_some() && !val.unwrap().is_empty())
+            .map(|val| val.unwrap().to_string())
+            .collect();
+    }
 }
 
 #[derive(Debug, Deserialize)]
