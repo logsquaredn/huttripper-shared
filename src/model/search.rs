@@ -28,7 +28,7 @@ impl HutSearchRepresentation {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TripReportSearchRepresentation {
-    pub sanitized_hut_name: String,
+    pub id: String,
     pub hut_conditions: String,
     pub weather_conditions: String,
     pub riding_conditions: String
@@ -38,7 +38,7 @@ impl TripReportSearchRepresentation {
 
     pub fn map_from(row: PgRow) -> Result<Self, sqlx::Error> {
         Ok(Self {
-            sanitized_hut_name: row.try_get("sanitizedhutname")?,
+            id: row.try_get("id")?,
             hut_conditions: row.try_get("hutconditions")?,
             weather_conditions: row.try_get("weatherconditions")?,
             riding_conditions: row.try_get("ridingconditions")?
