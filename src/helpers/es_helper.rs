@@ -1,4 +1,5 @@
 use core::fmt;
+use std::collections::HashMap;
 
 use elasticsearch::{auth::Credentials, cert::CertificateValidation, http::{transport::{SingleNodeConnectionPool, TransportBuilder}, Url}, indices::{IndicesCreateParts, IndicesDeleteParts, IndicesExistsParts}, BulkOperation, BulkParts, Elasticsearch, SearchParts};
 use serde::{Deserialize, Serialize};
@@ -142,13 +143,13 @@ impl ESHelper {
         Ok(hits?)
     }
 
-    pub fn parse_hits(hits: Vec<ElasticsearchHit>, key: &str) -> Vec<String> {
-        return hits
+    pub fn parse_scores_from_hits(hits: Vec<ElasticsearchHit>, key: &str) -> HashMap<String, f32> {
+        hits
             .iter()
-            .map(|hit| hit._source[key].as_str())
-            .filter(|val| val.is_some() && !val.unwrap().is_empty())
-            .map(|val| val.unwrap().to_string())
-            .collect();
+            .map(|hit| (hit._source[key].as_str(), hit._score))
+            .filter(|entry| entry.0.is_some() && !entry.0.unwrap().is_empty())
+            .map(|entry| (entry.0.unwrap().to_string(), entry.1))
+            .collect()
     }
 }
 
