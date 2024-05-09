@@ -52,3 +52,15 @@ pub struct ArticleSearchRepresentation {
     pub title: String,
     pub description: String
 }
+
+impl ArticleSearchRepresentation {
+
+    pub fn map_from(row: PgRow) -> Result<Self, sqlx::Error> {
+        Ok(Self {
+                id: row.try_get("id")?,
+                title: row.try_get("title")?,
+                description: row.try_get("description")?
+            }
+        )
+    }
+}
