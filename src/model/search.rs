@@ -46,7 +46,7 @@ impl TripReportSearchRepresentation {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct ArticleSearchRepresentation {
     pub id: String,
     pub title: String,
