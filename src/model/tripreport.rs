@@ -27,7 +27,7 @@ impl TripReport {
             hut_conditions: row.try_get("hutconditions")?,
             riding_conditions: row.try_get("ridingconditions")?,
             approved: row.try_get("approved")?,
-            image_links: vec![]
+            image_links: row.try_get("images")?
         })
     }
 }
