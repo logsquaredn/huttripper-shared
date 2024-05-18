@@ -17,6 +17,7 @@ pub struct TripReport {
 impl TripReport {
 
     pub fn map_from(row: sqlx::postgres::PgRow) -> Result<Self, sqlx::Error> {
+        let maybe_image_links: Option<Vec<String>> = row.try_get("images")?;
         Ok(Self {
             id: row.try_get("id")?,
             first_name: row.try_get("firstname")?,
@@ -27,7 +28,7 @@ impl TripReport {
             hut_conditions: row.try_get("hutconditions")?,
             riding_conditions: row.try_get("ridingconditions")?,
             approved: row.try_get("approved")?,
-            image_links: row.try_get("images")?
+            image_links: maybe_image_links.unwrap_or(vec![])
         })
     }
 }
