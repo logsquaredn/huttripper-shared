@@ -162,6 +162,12 @@ pub struct ElasticsearchHit {
 }
 
 #[derive(Debug)]
+pub struct ElasticsearchMatch {
+    pub query: String,
+    pub boost: i32
+}
+
+#[derive(Debug)]
 pub struct ElasticsearchCreateClientError {
     pub message: String
 }
