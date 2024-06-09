@@ -152,22 +152,13 @@ impl ESHelper {
             .collect()
     }
 
-    pub fn get_matches(term: &str) -> Vec<ElasticsearchMatch> {
-        term
+    pub fn tokenize(s: &str) -> Vec<String> {
+        s
             .split(" ")
             .into_iter()
-            .map(|t| {
-                if t.trim().eq("huts") || t.trim().eq("hut") || 
-                    t.trim().eq("yurts") || t.trim().eq("yurt") ||
-                    t.trim().eq("cabins") || t.trim().eq("cabin") {
-                    ElasticsearchMatch{ query: t.to_string(), boost: 1}
-                } else {
-                    ElasticsearchMatch{ query: t.to_string(), boost: 2}
-                }
-            })
+            .map(|t| t.to_string())
             .collect()
     }
-    
 }
 
 #[derive(Debug, Deserialize)]
