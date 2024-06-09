@@ -151,14 +151,6 @@ impl ESHelper {
             .map(|entry| (entry.0.unwrap().to_string(), entry.1))
             .collect()
     }
-
-    pub fn tokenize(s: &str) -> Vec<String> {
-        s
-            .split(" ")
-            .into_iter()
-            .map(|t| t.to_string())
-            .collect()
-    }
 }
 
 #[derive(Debug, Deserialize)]
