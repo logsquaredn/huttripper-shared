@@ -6,7 +6,7 @@ use sqlx::{postgres::PgRow, Row};
 pub struct AviReport {
     pub zone_name: String,
     pub avi_center: String,
-    pub avi_center_link: String,
+    pub avi_center_link: Option<String>,
     pub timezone: String,
     pub off_season: bool,
     pub travel_advice: String,
@@ -63,7 +63,7 @@ impl AviReport {
 pub struct ZoneProperties {
     pub name: String,
     pub center: String,
-    pub center_link: String,
+    pub center_link: Option<String>,
     pub timezone: String,
     pub off_season: bool,
     pub travel_advice: String,
